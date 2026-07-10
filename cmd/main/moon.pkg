@@ -1,0 +1,9 @@
+import {
+  "ppyq882/moonnlp/core",
+  "ppyq882/moonnlp/segment",
+  "ppyq882/moonnlp/analysis",
+}
+
+options(
+  "is-main": true,
+)

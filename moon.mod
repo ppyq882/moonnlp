@@ -1,6 +1,6 @@
 name = "ppyq882/moonnlp"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 

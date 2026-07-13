@@ -6,17 +6,14 @@ pub struct DictSegmenter {
 
 ///|
 pub fn DictSegmenter::new() -> DictSegmenter {
-  let seg = {
-    trie: @core.Trie::new(),
-    trie_rev: @core.Trie::new()
-  }
-  
+  let seg = { trie: @core.Trie::new(), trie_rev: @core.Trie::new() }
+
   let default_dict = get_default_dict()
   for item in default_dict {
     let (w, _, _) = item
     seg.add_word(w)
   }
-  
+
   seg
 }
 
@@ -50,7 +47,7 @@ pub fn DictSegmenter::bmm(self : DictSegmenter, text : String) -> Array[String] 
   for i in 0..<chars.length() {
     rev_chars.push(chars[chars.length() - 1 - i])
   }
-  
+
   let rev_tokens = fmm_chars(self.trie_rev, rev_chars)
   let result = []
   for i in 0..<rev_tokens.length() {
@@ -65,25 +62,28 @@ pub fn DictSegmenter::bmm(self : DictSegmenter, text : String) -> Array[String] 
 }
 
 ///|
-pub fn DictSegmenter::bimm(self : DictSegmenter, text : String) -> Array[String] {
+pub fn DictSegmenter::bimm(
+  self : DictSegmenter,
+  text : String,
+) -> Array[String] {
   let fmm_res = self.fmm(text)
   let bmm_res = self.bmm(text)
-  
+
   if fmm_res == bmm_res {
     return fmm_res
   }
-  
+
   // Heuristic: compare word counts
   if fmm_res.length() < bmm_res.length() {
     return fmm_res
   } else if bmm_res.length() < fmm_res.length() {
     return bmm_res
   }
-  
+
   // Heuristic: compare single character counts
   let fmm_single_count = count_single_chars(fmm_res)
   let bmm_single_count = count_single_chars(bmm_res)
-  
+
   if fmm_single_count < bmm_single_count {
     fmm_res
   } else {
@@ -92,7 +92,10 @@ pub fn DictSegmenter::bimm(self : DictSegmenter, text : String) -> Array[String]
 }
 
 ///|
-pub fn DictSegmenter::segment(self : DictSegmenter, text : String) -> Array[String] {
+pub fn DictSegmenter::segment(
+  self : DictSegmenter,
+  text : String,
+) -> Array[String] {
   self.bimm(text)
 }
 
@@ -116,7 +119,7 @@ fn fmm_chars(trie : @core.Trie[Unit], chars : Array[Char]) -> Array[String] {
   let result = []
   let mut i = 0
   let n = chars.length()
-  
+
   while i < n {
     let c = chars[i]
     if @core.is_chinese(c) {
@@ -155,6 +158,6 @@ fn fmm_chars(trie : @core.Trie[Unit], chars : Array[Char]) -> Array[String] {
       i = j
     }
   }
-  
+
   result
 }

@@ -6,27 +6,27 @@ pub struct HybridSegmenter {
 
 ///|
 pub fn HybridSegmenter::new() -> HybridSegmenter {
-  {
-    dict_seg: DictSegmenter::new(),
-    hmm_seg: HMMSegmenter::new()
-  }
+  { dict_seg: DictSegmenter::new(), hmm_seg: HMMSegmenter::new() }
 }
 
 ///|
-pub fn HybridSegmenter::segment(self : HybridSegmenter, text : String) -> Array[String] {
+pub fn HybridSegmenter::segment(
+  self : HybridSegmenter,
+  text : String,
+) -> Array[String] {
   let initial_tokens = self.dict_seg.segment(text)
   let result = []
-  
+
   let mut i = 0
   let n = initial_tokens.length()
-  
+
   while i < n {
     let tok = initial_tokens[i]
     let chars = []
     for c in tok {
       chars.push(c)
     }
-    
+
     // Check if the current token is a single Chinese character
     if chars.length() == 1 && @core.is_chinese(chars[0]) {
       // Find the range of consecutive single Chinese characters
@@ -45,7 +45,7 @@ pub fn HybridSegmenter::segment(self : HybridSegmenter, text : String) -> Array[
           break
         }
       }
-      
+
       let len = temp_chars.length()
       if len > 1 {
         // Re-segment the joined single characters using HMM
@@ -66,6 +66,6 @@ pub fn HybridSegmenter::segment(self : HybridSegmenter, text : String) -> Array[
       i += 1
     }
   }
-  
+
   result
 }

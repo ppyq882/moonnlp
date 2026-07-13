@@ -1,4 +1,4 @@
 ///|
 pub trait Segmenter {
-  segment(Self, String) -> Array[String]
+  fn segment(Self, String) -> Array[String]
 }

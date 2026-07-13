@@ -1,31 +1,34 @@
 ///|
 pub fn is_chinese(c : Char) -> Bool {
   let val = c.to_int()
-  (val >= 0x4E00 && val <= 0x9FFF) || 
-  (val >= 0x3400 && val <= 0x4DBF) || 
+  (val >= 0x4E00 && val <= 0x9FFF) ||
+  (val >= 0x3400 && val <= 0x4DBF) ||
   (val >= 0x20000 && val <= 0x2A6DF) ||
   (val >= 0xF900 && val <= 0xFAFF)
 }
 
 ///|
 pub fn is_alphanumeric(c : Char) -> Bool {
-  (c >= 'a' && c <= 'z') || 
-  (c >= 'A' && c <= 'Z') || 
-  (c >= '0' && c <= '9')
+  (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
 }
 
 ///|
 pub fn is_whitespace(c : Char) -> Bool {
-  c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\u00A0' || c == '\u3000'
+  c == ' ' ||
+  c == '\t' ||
+  c == '\n' ||
+  c == '\r' ||
+  c == '\u00A0' ||
+  c == '\u3000'
 }
 
 ///|
 pub fn is_punctuation(c : Char) -> Bool {
   let val = c.to_int()
   // ASCII punctuation
-  (val >= 33 && val <= 47) || 
-  (val >= 58 && val <= 64) || 
-  (val >= 91 && val <= 96) || 
+  (val >= 33 && val <= 47) ||
+  (val >= 58 && val <= 64) ||
+  (val >= 91 && val <= 96) ||
   (val >= 123 && val <= 126) ||
   // Chinese and common Unicode punctuation
   is_chinese_punctuation(c)
@@ -54,5 +57,5 @@ pub fn is_chinese_punctuation(c : Char) -> Bool {
   val == 0xFF08 || // （
   val == 0xFF09 || // ）
   val == 0x2014 || // —
-  val == 0x2026    // …
+  val == 0x2026 // …
 }

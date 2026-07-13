@@ -1,0 +1,47 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ppyq882/moonnlp/core"
+
+// Values
+pub fn is_alphanumeric(Char) -> Bool
+
+pub fn is_chinese(Char) -> Bool
+
+pub fn is_chinese_punctuation(Char) -> Bool
+
+pub fn is_punctuation(Char) -> Bool
+
+pub fn is_whitespace(Char) -> Bool
+
+// Errors
+
+// Types and methods
+pub struct DoubleArrayTrie[T] {
+  base : Array[Int]
+  check : Array[Int]
+  values : Array[T?]
+}
+pub fn[T] DoubleArrayTrie::build(Trie[T]) -> Self[T]
+pub fn[T] DoubleArrayTrie::exact_match(Self[T], String) -> T?
+pub fn[T] DoubleArrayTrie::longest_prefix(Self[T], Array[Char], Int) -> Int
+pub fn[T] DoubleArrayTrie::new() -> Self[T]
+
+pub struct Trie[T] {
+  root : TrieNode[T]
+}
+pub fn[T] Trie::all_prefixes(Self[T], Array[Char], Int) -> Array[Int]
+pub fn[T] Trie::contains(Self[T], String) -> Bool
+pub fn[T] Trie::get(Self[T], String) -> T?
+pub fn[T] Trie::insert(Self[T], String, T) -> Unit
+pub fn[T] Trie::longest_prefix(Self[T], Array[Char], Int) -> Int
+pub fn[T] Trie::new() -> Self[T]
+
+pub struct TrieNode[T] {
+  children : Map[Char, TrieNode[T]]
+  mut value : T?
+}
+pub fn[T] TrieNode::new() -> Self[T]
+
+// Type aliases
+
+// Traits
+

@@ -9,39 +9,42 @@ pub struct HMMSegmenter {
 pub fn HMMSegmenter::new() -> HMMSegmenter {
   let emit = Map([])
   populate_emissions(emit)
-  
+
   let pi = [-0.262686, -3.14e100, -3.14e100, -1.46526]
-  
+
   // trans[state] to next state. order: B, M, E, S
   let trans = [
     [-3.14e100, -1.96, -0.15, -3.14e100], // B can go to M or E
     [-3.14e100, -1.96, -0.15, -3.14e100], // M can go to M or E
     [-0.59, -3.14e100, -3.14e100, -0.79], // E can go to B or S
-    [-0.73, -3.14e100, -3.14e100, -0.65]  // S can go to B or S
+    [-0.73, -3.14e100, -3.14e100, -0.65], // S can go to B or S
   ]
-  
+
   { pi, trans, emit }
 }
 
 ///|
-pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String] {
+pub fn HMMSegmenter::segment(
+  self : HMMSegmenter,
+  text : String,
+) -> Array[String] {
   let chars = []
   for c in text {
     chars.push(c)
   }
-  
+
   let n = chars.length()
   if n == 0 {
     return []
   }
-  
+
   // 1. Check if the string contains Chinese.
   // If it's English or whitespace, HMM doesn't apply well, so we handle it similarly to FMM.
   let has_chinese = has_chinese_char(chars)
   if !has_chinese {
     return fallback_segment(chars)
   }
-  
+
   // 2. Viterbi algorithm
   let v = []
   let path = []
@@ -49,14 +52,14 @@ pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String
     v.push([0.0, 0.0, 0.0, 0.0])
     path.push([0, 0, 0, 0])
   }
-  
+
   // Initialization (t = 0)
   for y in 0..<4 {
     let emit_p = self.get_emission(chars[0], y)
     v[0][y] = self.pi[y] + emit_p
     path[0][y] = y
   }
-  
+
   // DP steps (t > 0)
   for t in 1..<n {
     for y in 0..<4 {
@@ -74,7 +77,7 @@ pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String
       path[t][y] = best_y0
     }
   }
-  
+
   // Find best last state
   let mut max_last_val = -1.0e300
   let mut best_last_state = 3 // default to S
@@ -84,7 +87,7 @@ pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String
       best_last_state = y
     }
   }
-  
+
   // Backtrack
   let states = Array::make(n, 0)
   let mut state = best_last_state
@@ -95,7 +98,7 @@ pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String
     states[t] = state
     t -= 1
   }
-  
+
   // Segment text based on states (B=0, M=1, E=2, S=3)
   let result = []
   let mut i = 0
@@ -158,22 +161,25 @@ pub fn HMMSegmenter::segment(self : HMMSegmenter, text : String) -> Array[String
       }
     }
   }
-  
+
   result
 }
 
 ///|
-fn HMMSegmenter::get_emission(self : HMMSegmenter, c : Char, state : Int) -> Double {
+fn HMMSegmenter::get_emission(
+  self : HMMSegmenter,
+  c : Char,
+  state : Int,
+) -> Double {
   match self.emit.get(c) {
     Some(probs) => probs[state]
-    None => {
+    None =>
       // Fallback for OOV characters
       if @core.is_chinese(c) {
         -10.0 // Default log emission probability
       } else {
         -20.0
       }
-    }
   }
 }
 
@@ -222,11 +228,20 @@ fn fallback_segment(chars : Array[Char]) -> Array[String] {
 
 ///|
 fn populate_emissions(emit : Map[Char, Array[Double]]) -> Unit {
-  let b_only = ['中', '大', '公', '计', '自', '处', '开', '软', '生', '起', '科', '研', '发', '国']
-  let e_only = ['华', '民', '国', '员', '算', '然', '理', '发', '件', '命', '源', '学', '究', '展', '家']
+  let b_only = [
+    '中', '大', '公', '计', '自', '处', '开', '软', '生', '起', '科',
+    '研', '发', '国',
+  ]
+  let e_only = [
+    '华', '民', '国', '员', '算', '然', '理', '发', '件', '命', '源',
+    '学', '究', '展', '家',
+  ]
   let m_only = ['和', '共']
-  let s_only = ['我', '你', '他', '的', '了', '在', '是', '有', '与', '这', '那', '都', '很', '个']
-  
+  let s_only = [
+    '我', '你', '他', '的', '了', '在', '是', '有', '与', '这', '那',
+    '都', '很', '个',
+  ]
+
   for c in b_only {
     emit.set(c, [-1.0, -10.0, -10.0, -3.0])
   }
@@ -248,7 +263,7 @@ fn populate_emissions(emit : Map[Char, Array[Double]]) -> Unit {
       None => emit.set(c, [-5.0, -10.0, -5.0, -0.5])
     }
   }
-  
+
   // Custom test cases for OOV
   emit.set('蓝', [-0.5, -10.0, -10.0, -2.0])
   emit.set('精', [-5.0, -0.5, -5.0, -2.0])

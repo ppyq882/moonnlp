@@ -1,0 +1,44 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ppyq882/moonnlp/analysis"
+
+// Values
+pub fn cosine_similarity(Map[String, Int], Map[String, Int]) -> Double
+
+pub fn levenshtein_distance(String, String) -> Int
+
+// Errors
+
+// Types and methods
+pub struct NaiveBayesClassifier {
+  classes : Map[String, Unit]
+  class_counts : Map[String, Int]
+  vocab : Map[String, Unit]
+  word_counts : Map[String, Map[String, Int]]
+  total_word_counts : Map[String, Int]
+  mut total_docs : Int
+}
+pub fn NaiveBayesClassifier::new() -> Self
+pub fn NaiveBayesClassifier::predict(Self, Array[String]) -> String?
+pub fn NaiveBayesClassifier::train(Self, String, Array[String]) -> Unit
+
+pub struct TFIDF {
+  mut doc_count : Int
+  doc_freq : Map[String, Int]
+}
+pub fn TFIDF::add_document(Self, Array[String]) -> Unit
+pub fn TFIDF::calculate(Self, Array[String]) -> Map[String, Double]
+pub fn TFIDF::get_keywords(Self, Array[String], Int) -> Array[(String, Double)]
+pub fn TFIDF::new() -> Self
+
+pub struct TextRank {
+  damping_factor : Double
+  max_iterations : Int
+  window_size : Int
+}
+pub fn TextRank::extract_keywords(Self, Array[String], Int) -> Array[(String, Double)]
+pub fn TextRank::new() -> Self
+
+// Type aliases
+
+// Traits
+

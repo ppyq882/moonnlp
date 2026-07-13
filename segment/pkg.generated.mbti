@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ppyq882/moonnlp/segment"
+
+import {
+  "ppyq882/moonnlp/core",
+}
+
+// Values
+pub fn get_default_dict() -> Array[(String, Int, String)]
+
+// Errors
+
+// Types and methods
+pub struct DictSegmenter {
+  trie : @core.Trie[Unit]
+  trie_rev : @core.Trie[Unit]
+}
+pub fn DictSegmenter::add_word(Self, String) -> Unit
+pub fn DictSegmenter::bimm(Self, String) -> Array[String]
+pub fn DictSegmenter::bmm(Self, String) -> Array[String]
+pub fn DictSegmenter::fmm(Self, String) -> Array[String]
+pub fn DictSegmenter::new() -> Self
+pub fn DictSegmenter::segment(Self, String) -> Array[String]
+
+pub struct HMMSegmenter {
+  pi : Array[Double]
+  trans : Array[Array[Double]]
+  emit : Map[Char, Array[Double]]
+}
+pub fn HMMSegmenter::new() -> Self
+pub fn HMMSegmenter::segment(Self, String) -> Array[String]
+
+pub struct HybridSegmenter {
+  dict_seg : DictSegmenter
+  hmm_seg : HMMSegmenter
+}
+pub fn HybridSegmenter::new() -> Self
+pub fn HybridSegmenter::segment(Self, String) -> Array[String]
+
+pub struct POSTagger {
+  tags : Array[String]
+  tag_to_idx : Map[String, Int]
+  pi : Array[Double]
+  trans : Array[Array[Double]]
+  word_tag_freq : Map[String, Map[String, Int]]
+  tag_totals : Array[Int]
+  vocab_size : Int
+}
+pub fn POSTagger::new() -> Self
+pub fn POSTagger::tag(Self, Array[String]) -> Array[String]
+
+// Type aliases
+
+// Traits
+pub trait Segmenter {
+  fn segment(Self, String) -> Array[String]
+}
+

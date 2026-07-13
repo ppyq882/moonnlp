@@ -1,7 +1,7 @@
 ///|
 pub struct TrieNode[T] {
   children : Map[Char, TrieNode[T]]
-  mut value : Option[T]
+  mut value : T?
 }
 
 ///|
@@ -36,7 +36,7 @@ pub fn[T] Trie::insert(self : Trie[T], key : String, value : T) -> Unit {
 }
 
 ///|
-pub fn[T] Trie::get(self : Trie[T], key : String) -> Option[T] {
+pub fn[T] Trie::get(self : Trie[T], key : String) -> T? {
   let mut curr = self.root
   for c in key {
     match curr.children.get(c) {
@@ -58,11 +58,15 @@ pub fn[T] Trie::contains(self : Trie[T], key : String) -> Bool {
 ///|
 /// Returns the length of the longest matching prefix starting at `start_idx`.
 /// Returns 0 if no match is found.
-pub fn[T] Trie::longest_prefix(self : Trie[T], chars : Array[Char], start_idx : Int) -> Int {
+pub fn[T] Trie::longest_prefix(
+  self : Trie[T],
+  chars : Array[Char],
+  start_idx : Int,
+) -> Int {
   let mut curr = self.root
   let mut longest_len = 0
   let mut current_len = 0
-  
+
   for i in start_idx..<chars.length() {
     let c = chars[i]
     match curr.children.get(c) {
@@ -77,17 +81,21 @@ pub fn[T] Trie::longest_prefix(self : Trie[T], chars : Array[Char], start_idx : 
       None => break
     }
   }
-  
+
   longest_len
 }
 
 ///|
 /// Returns all matching prefix lengths starting at `start_idx`.
-pub fn[T] Trie::all_prefixes(self : Trie[T], chars : Array[Char], start_idx : Int) -> Array[Int] {
+pub fn[T] Trie::all_prefixes(
+  self : Trie[T],
+  chars : Array[Char],
+  start_idx : Int,
+) -> Array[Int] {
   let result = []
   let mut curr = self.root
   let mut current_len = 0
-  
+
   for i in start_idx..<chars.length() {
     let c = chars[i]
     match curr.children.get(c) {
@@ -102,6 +110,6 @@ pub fn[T] Trie::all_prefixes(self : Trie[T], chars : Array[Char], start_idx : In
       None => break
     }
   }
-  
+
   result
 }

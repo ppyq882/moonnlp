@@ -38,3 +38,17 @@ test "pos tagger basic mapping and tagging" {
   assert_true(tags[1] == "p") // "在" -> preposition (p)
   assert_true(tags[4] == "n") // "学习" -> noun (n) in our default dict
 }
+
+///|
+test "dict segmenter emoji non-infinite-loop" {
+  let seg = DictSegmenter::new()
+  let res = seg.segment("我喜欢自然语言处理😀🚀！")
+  assert_true(res.length() > 0)
+}
+
+///|
+test "hmm segmenter emoji non-infinite-loop" {
+  let seg = HMMSegmenter::new()
+  let res = seg.segment("自然语言处理😀🚀")
+  assert_true(res.length() > 0)
+}

@@ -4,6 +4,4 @@ import {
   "ppyq882/moonnlp/analysis",
 }
 
-options(
-  "is-main": true,
-)
+pkgtype(kind: "executable")

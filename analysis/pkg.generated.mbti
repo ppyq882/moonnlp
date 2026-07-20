@@ -1,8 +1,14 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "ppyq882/moonnlp/analysis"
 
+import {
+  "ppyq882/moonnlp/segment",
+}
+
 // Values
 pub fn cosine_similarity(Map[String, Int], Map[String, Int]) -> Double
+
+pub fn extract_summary(String, Int) -> Array[String]
 
 pub fn levenshtein_distance(String, String) -> Int
 
@@ -37,6 +43,12 @@ pub struct TextRank {
 }
 pub fn TextRank::extract_keywords(Self, Array[String], Int) -> Array[(String, Double)]
 pub fn TextRank::new() -> Self
+
+pub struct TextSummarizer {
+  segmenter : @segment.DictSegmenter
+}
+pub fn TextSummarizer::new() -> Self
+pub fn TextSummarizer::summarize(Self, String, Int) -> Array[String]
 
 // Type aliases
 

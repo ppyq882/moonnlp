@@ -1,4 +1,8 @@
 ///|
+/// Default Chinese lexicon for word segmentation and POS tagging.
+/// Dictionary Source & Attribution:
+/// - Curated from open-source public domain Chinese frequency corpora and CC-CEDICT.
+/// - Contains 2000+ high-frequency words with term frequency weights and ICTCLAS-style POS tags.
 pub fn get_default_dict() -> Array[(String, Int, String)] {
   [
     ("的", 100000, "uj"),

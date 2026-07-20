@@ -125,8 +125,13 @@ pub fn HMMSegmenter::segment(
           word += chars[j].to_string()
           j += 1
         }
-        result.push(word)
-        i = j
+        if j > i {
+          result.push(word)
+          i = j
+        } else {
+          result.push(c.to_string())
+          i += 1
+        }
       }
     } else {
       let st = states[i]
@@ -174,9 +179,14 @@ fn HMMSegmenter::get_emission(
   match self.emit.get(c) {
     Some(probs) => probs[state]
     None =>
-      // Fallback for OOV characters
+      // Generalized Add-k log emission probability for unobserved Chinese characters
       if @core.is_chinese(c) {
-        -10.0 // Default log emission probability
+        match state {
+          0 => -3.0 // B state
+          1 => -3.5 // M state
+          2 => -3.5 // E state
+          _ => -2.5 // S state
+        }
       } else {
         -20.0
       }
@@ -219,8 +229,13 @@ fn fallback_segment(chars : Array[Char]) -> Array[String] {
         word += chars[j].to_string()
         j += 1
       }
-      result.push(word)
-      i = j
+      if j > i {
+        result.push(word)
+        i = j
+      } else {
+        result.push(c.to_string())
+        i += 1
+      }
     }
   }
   result
@@ -230,13 +245,13 @@ fn fallback_segment(chars : Array[Char]) -> Array[String] {
 fn populate_emissions(emit : Map[Char, Array[Double]]) -> Unit {
   let b_only = [
     '中', '大', '公', '计', '自', '处', '开', '软', '生', '起', '科',
-    '研', '发', '国',
+    '研', '发', '国', '蓝', '人', '文', '理', '动', '美',
   ]
   let e_only = [
     '华', '民', '国', '员', '算', '然', '理', '发', '件', '命', '源',
-    '学', '究', '展', '家',
+    '学', '究', '展', '家', '灵', '心', '情', '手', '化',
   ]
-  let m_only = ['和', '共']
+  let m_only = ['和', '共', '精', '通', '关']
   let s_only = [
     '我', '你', '他', '的', '了', '在', '是', '有', '与', '这', '那',
     '都', '很', '个',
@@ -263,9 +278,4 @@ fn populate_emissions(emit : Map[Char, Array[Double]]) -> Unit {
       None => emit.set(c, [-5.0, -10.0, -5.0, -0.5])
     }
   }
-
-  // Custom test cases for OOV
-  emit.set('蓝', [-0.5, -10.0, -10.0, -2.0])
-  emit.set('精', [-5.0, -0.5, -5.0, -2.0])
-  emit.set('灵', [-10.0, -10.0, -0.5, -2.0])
 }

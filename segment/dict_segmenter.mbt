@@ -2,30 +2,42 @@
 pub struct DictSegmenter {
   trie : @core.Trie[Unit]
   trie_rev : @core.Trie[Unit]
+  mut dat : @core.DoubleArrayTrie[Unit]
+  mut dat_rev : @core.DoubleArrayTrie[Unit]
 }
 
 ///|
 pub fn DictSegmenter::new() -> DictSegmenter {
-  let seg = { trie: @core.Trie::new(), trie_rev: @core.Trie::new() }
+  let trie = @core.Trie::new()
+  let trie_rev = @core.Trie::new()
 
   let default_dict = get_default_dict()
   for item in default_dict {
     let (w, _, _) = item
-    seg.add_word(w)
+    trie.insert(w, ())
+    let mut rev_word = ""
+    for c in w {
+      rev_word = c.to_string() + rev_word
+    }
+    trie_rev.insert(rev_word, ())
   }
 
-  seg
+  let dat = @core.DoubleArrayTrie::build(trie)
+  let dat_rev = @core.DoubleArrayTrie::build(trie_rev)
+
+  { trie, trie_rev, dat, dat_rev }
 }
 
 ///|
 pub fn DictSegmenter::add_word(self : DictSegmenter, word : String) -> Unit {
   self.trie.insert(word, ())
-  // Reverse the word
   let mut rev_word = ""
   for c in word {
     rev_word = c.to_string() + rev_word
   }
   self.trie_rev.insert(rev_word, ())
+  self.dat = @core.DoubleArrayTrie::build(self.trie)
+  self.dat_rev = @core.DoubleArrayTrie::build(self.trie_rev)
 }
 
 ///|
@@ -34,7 +46,7 @@ pub fn DictSegmenter::fmm(self : DictSegmenter, text : String) -> Array[String] 
   for c in text {
     chars.push(c)
   }
-  fmm_chars(self.trie, chars)
+  fmm_chars(self.dat, chars)
 }
 
 ///|
@@ -48,7 +60,7 @@ pub fn DictSegmenter::bmm(self : DictSegmenter, text : String) -> Array[String] 
     rev_chars.push(chars[chars.length() - 1 - i])
   }
 
-  let rev_tokens = fmm_chars(self.trie_rev, rev_chars)
+  let rev_tokens = fmm_chars(self.dat_rev, rev_chars)
   let result = []
   for i in 0..<rev_tokens.length() {
     let tok = rev_tokens[rev_tokens.length() - 1 - i]
@@ -115,7 +127,10 @@ fn count_single_chars(tokens : Array[String]) -> Int {
 }
 
 ///|
-fn fmm_chars(trie : @core.Trie[Unit], chars : Array[Char]) -> Array[String] {
+fn fmm_chars(
+  dat : @core.DoubleArrayTrie[Unit],
+  chars : Array[Char],
+) -> Array[String] {
   let result = []
   let mut i = 0
   let n = chars.length()
@@ -123,7 +138,7 @@ fn fmm_chars(trie : @core.Trie[Unit], chars : Array[Char]) -> Array[String] {
   while i < n {
     let c = chars[i]
     if @core.is_chinese(c) {
-      let len = trie.longest_prefix(chars, i)
+      let len = dat.longest_prefix(chars, i)
       if len > 0 {
         let mut word = ""
         for j in 0..<len {
@@ -154,8 +169,13 @@ fn fmm_chars(trie : @core.Trie[Unit], chars : Array[Char]) -> Array[String] {
         word += chars[j].to_string()
         j += 1
       }
-      result.push(word)
-      i = j
+      if j > i {
+        result.push(word)
+        i = j
+      } else {
+        result.push(c.to_string())
+        i += 1
+      }
     }
   }
 

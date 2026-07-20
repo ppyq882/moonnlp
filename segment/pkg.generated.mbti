@@ -14,6 +14,8 @@ pub fn get_default_dict() -> Array[(String, Int, String)]
 pub struct DictSegmenter {
   trie : @core.Trie[Unit]
   trie_rev : @core.Trie[Unit]
+  mut dat : @core.DoubleArrayTrie[Unit]
+  mut dat_rev : @core.DoubleArrayTrie[Unit]
 }
 pub fn DictSegmenter::add_word(Self, String) -> Unit
 pub fn DictSegmenter::bimm(Self, String) -> Array[String]

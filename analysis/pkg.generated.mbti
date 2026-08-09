@@ -77,6 +77,14 @@ pub struct SentenceSplitter {
 pub fn SentenceSplitter::new() -> Self
 pub fn SentenceSplitter::split(Self, String) -> Array[String]
 
+pub struct SummaryOptions {
+  max_sentences : Int
+  min_sentence_length : Int
+  position_weight : Double
+  redundancy_threshold : Double
+}
+pub fn SummaryOptions::new(Int, Int, Double, Double) -> Result[Self, String]
+
 pub struct TFIDF {
   mut doc_count : Int
   doc_freq : Map[String, Int]
@@ -99,6 +107,7 @@ pub struct TextSummarizer {
 }
 pub fn TextSummarizer::new() -> Self
 pub fn TextSummarizer::summarize(Self, String, Int) -> Array[String]
+pub fn TextSummarizer::summarize_with_options(Self, String, SummaryOptions) -> Result[Array[String], String]
 
 // Type aliases
 

@@ -57,12 +57,16 @@ pub fn[T] Trie::contains(self : Trie[T], key : String) -> Bool {
 
 ///|
 /// Returns the length of the longest matching prefix starting at `start_idx`.
-/// Returns 0 if no match is found.
+/// Returns 0 when `start_idx` is outside `chars` or no match is found.
 pub fn[T] Trie::longest_prefix(
   self : Trie[T],
   chars : Array[Char],
   start_idx : Int,
 ) -> Int {
+  if start_idx < 0 || start_idx >= chars.length() {
+    return 0
+  }
+
   let mut curr = self.root
   let mut longest_len = 0
   let mut current_len = 0

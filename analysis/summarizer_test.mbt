@@ -25,4 +25,5 @@ test "text summarizer suppresses duplicate sentences" {
 ///|
 test "legacy extractor preserves raw punctuation segments below its limit" {
   assert_true(extract_summary("。。", 2) == ["。", "。"])
+  assert_true(extract_summary("。。", 1) == ["。"])
 }

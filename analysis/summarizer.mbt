@@ -107,7 +107,11 @@ pub fn TextSummarizer::summarize(
   if legacy_sentences.length() <= max_sentences {
     return legacy_sentences
   }
-  summarize_configured(self, text, default_summary_options(max_sentences))
+  summarize_sentences(
+    self,
+    legacy_sentences,
+    default_summary_options(max_sentences),
+  )
 }
 
 ///|
@@ -141,7 +145,15 @@ fn summarize_configured(
   text : String,
   options : SummaryOptions,
 ) -> Array[String] {
-  let raw_sentences = split_sentences(text)
+  summarize_sentences(summarizer, split_sentences(text), options)
+}
+
+///|
+fn summarize_sentences(
+  summarizer : TextSummarizer,
+  raw_sentences : Array[String],
+  options : SummaryOptions,
+) -> Array[String] {
   let sentence_count = raw_sentences.length()
   if sentence_count == 0 || options.max_sentences == 0 {
     return []

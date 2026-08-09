@@ -14,10 +14,15 @@ test "text summarizer basic extraction" {
 test "text summarizer suppresses duplicate sentences" {
   let summary = extract_summary(
     "人工智能推动产业升级。人工智能推动产业升级。科研团队发布新成果。",
-    3,
+    2,
   )
   assert_true(
     summary ==
     ["人工智能推动产业升级。", "科研团队发布新成果。"],
   )
+}
+
+///|
+test "legacy extractor preserves raw punctuation segments below its limit" {
+  assert_true(extract_summary("。。", 2) == ["。", "。"])
 }

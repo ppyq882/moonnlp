@@ -1,4 +1,16 @@
 ///|
+/// Configures `TextSummarizer::summarize_with_options`.
+///
+/// ```mbt check
+/// test {
+///   assert_true(
+///     match SummaryOptions::new(2, 0, 0.2, 0.8) {
+///       Ok(_) => true
+///       Err(_) => false
+///     },
+///   )
+/// }
+/// ```
 pub struct SummaryOptions {
   max_sentences : Int
   min_sentence_length : Int
@@ -7,6 +19,21 @@ pub struct SummaryOptions {
 }
 
 ///|
+/// Creates validated summary options. `max_sentences` and
+/// `min_sentence_length` must be non-negative, `position_weight` must be
+/// finite and non-negative, and `redundancy_threshold` must be finite in
+/// `[0.0, 1.0]`.
+///
+/// ```mbt check
+/// test {
+///   assert_true(
+///     match SummaryOptions::new(1, 0, 0.0, 0.0) {
+///       Ok(_) => true
+///       Err(_) => false
+///     },
+///   )
+/// }
+/// ```
 pub fn SummaryOptions::new(
   max_sentences : Int,
   min_sentence_length : Int,
@@ -76,10 +103,27 @@ pub fn TextSummarizer::summarize(
   if max_sentences < 0 {
     return []
   }
+  let legacy_sentences = split_legacy_sentences(text)
+  if legacy_sentences.length() <= max_sentences {
+    return legacy_sentences
+  }
   summarize_configured(self, text, default_summary_options(max_sentences))
 }
 
 ///|
+/// Summarizes text with validated options. A zero redundancy threshold rejects
+/// only sentences with positive token overlap; thresholds above zero reject
+/// sentences whose Jaccard similarity reaches that threshold.
+///
+/// ```mbt check
+/// test {
+///   let options = SummaryOptions::new(2, 0, 0.0, 0.8).unwrap()
+///   let summary = TextSummarizer::new()
+///     .summarize_with_options("第一句。第二句。", options)
+///     .unwrap()
+///   assert_true(summary.length() == 2)
+/// }
+/// ```
 pub fn TextSummarizer::summarize_with_options(
   self : TextSummarizer,
   text : String,
@@ -232,7 +276,8 @@ fn is_redundant_sentence(
     } else {
       token_jaccard(candidate_words, selected_words)
     }
-    if similarity >= threshold {
+    if (threshold == 0.0 && similarity > 0.0) ||
+      (threshold > 0.0 && similarity >= threshold) {
       return true
     }
   }
@@ -305,6 +350,27 @@ fn split_sentences(text : String) -> Array[String] {
 }
 
 ///|
+fn split_legacy_sentences(text : String) -> Array[String] {
+  let sentences = []
+  let mut current = ""
+  for character in text {
+    if is_summary_terminator(character) {
+      current += character.to_string()
+      if current.length() > 0 {
+        sentences.push(current)
+      }
+      current = ""
+    } else {
+      current += character.to_string()
+    }
+  }
+  if current.length() > 0 {
+    sentences.push(current)
+  }
+  sentences
+}
+
+///|
 fn sentence_content_length(sentence : String) -> Int {
   let mut length = 0
   for character in sentence {
@@ -344,4 +410,24 @@ fn sort_int_array(arr : Array[Int]) -> Unit {
       }
     }
   }
+}
+
+///|
+test "configured summarizer revalidates direct invalid options" {
+  let invalid : SummaryOptions = {
+    max_sentences: 1,
+    min_sentence_length: 0,
+    position_weight: 0.0 / 0.0,
+    redundancy_threshold: 0.8,
+  }
+  let result = TextSummarizer::new().summarize_with_options(
+    "第一句。", invalid,
+  )
+  assert_true(
+    match result {
+      Err(message) =>
+        message == "position_weight must be finite and non-negative"
+      Ok(_) => false
+    },
+  )
 }

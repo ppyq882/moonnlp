@@ -61,6 +61,15 @@ test "configured summarizer handles a graph without edges" {
 }
 
 ///|
+test "zero redundancy threshold keeps non-overlapping sentences" {
+  let options = SummaryOptions::new(2, 0, 0.0, 0.0).unwrap()
+  let summary = TextSummarizer::new()
+    .summarize_with_options("甲。乙。", options)
+    .unwrap()
+  assert_true(summary == ["甲。", "乙。"])
+}
+
+///|
 test "configured summarizer returns stable source ordered selections" {
   let options = SummaryOptions::new(3, 0, 1000.0, 0.8).unwrap()
   let text = "人工智能促进创新。天气晴朗。人工智能促进创新。科研成果持续涌现。"

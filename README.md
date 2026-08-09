@@ -58,7 +58,7 @@ moonnlp/
 ├── moon.mod                  # 模块元数据定义 (含 readme, repository, description)
 ├── LICENSE                   # Apache License 2.0 授权文件
 ├── README.md                 # 项目详细说明文档
-├── .github/workflows/ci.yml  # GitHub Actions 自动化流水线 (含 moon CLI 兼容包装器)
+├── .github/workflows/ci.yml  # GitHub Actions 自动化流水线 (严格 MoonBit 质量门禁)
 ├── core/                     # 核心通用包
 │   ├── trie.mbt              # 前缀树（Trie Tree）结构与前缀搜索
 │   ├── dat.mbt               # 双数组前缀树 (Double Array Trie, DAT)
@@ -130,6 +130,30 @@ moon test --target wasm-gc --deny-warn
 moon run cmd/main
 ```
 
+### 本地验收门禁 | Local Acceptance Gates
+
+已核验的工具链为 MoonBit `0.1.20260713`（`moon` 与 `moonrun`）及
+`moonc v0.10.4`。在仓库根目录运行可复现的本地验收门禁：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify_acceptance.ps1
+```
+
+脚本会先更新依赖；在依赖已更新且需要离线质量检查时，可跳过这个唯一可选的网络步骤：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify_acceptance.ps1 -SkipUpdate
+```
+
+脚本会记录 `moon version --all`，然后检查格式、警告、`wasm`、`wasm-gc`、`js`
+和 `native` 后端的构建与测试，以及生成接口和工作树一致性。此工具链的 `moon fmt`
+和 `moon info` 不支持 `--deny-warn`，因此门禁有意使用 `moon fmt --check` 和
+`moon info --target all`；编译和测试命令保留 `--deny-warn`。
+
+GitHub Actions 在 Linux、macOS 与 Windows 矩阵中，记录 MoonBit 版本并运行
+`moon update` 后执行相同门禁。此处仅描述工作流配置，未断言外部 CI、Release 或
+Mooncakes 发布状态。
+
 ---
 
 ## 📜 开源协议与合规声明 | Open Source License & Compliance
@@ -143,4 +167,4 @@ moon run cmd/main
 本项目作为 2026 MoonBit 国产基础软件生态开源大赛 (OSC2026) 的参赛作品，完全由参赛开发者与 AI 编码助手 (Gemini/Antigravity) 合作完成。分工如下：
 1. **架构与算法设计 (人类)**: 提出基于 DAT 前缀树、HMM 序列标注、TextRank 与抽样自动摘要的算法架构。
 2. **代码编写与类型推导 (AI & 人类)**: AI 编写核心实现与自动化测试用例，人类进行算法边界验证与性能打磨。
-3. **零警告与 CI 兼容整改 (AI & 人类)**: 针对 MoonBit 最新工具链特性编写 CI 兼容 Packaging 包装器，确保编译警告率为 0%，并通过 100% 单元测试。
+3. **零警告与 CI 兼容整改 (AI & 人类)**: 针对 MoonBit 最新工具链特性编写严格的 CI 与本地验收门禁，不使用静默剥离参数的包装器。

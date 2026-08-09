@@ -8,6 +8,10 @@ import {
 // Values
 pub fn cosine_similarity(Map[String, Int], Map[String, Int]) -> Double
 
+pub fn evaluate_boundary_metrics(Array[Int], Array[Int]) -> BoundaryMetrics
+
+pub fn evaluate_classification(Array[String], Array[String]) -> Result[ClassificationMetrics, String]
+
 pub fn extract_summary(String, Int) -> Array[String]
 
 pub fn levenshtein_distance(String, String) -> Int
@@ -15,6 +19,47 @@ pub fn levenshtein_distance(String, String) -> Int
 // Errors
 
 // Types and methods
+pub struct BoundaryMetrics {
+  precision : Double
+  recall : Double
+  f1 : Double
+}
+
+pub struct ClassificationMetrics {
+  accuracy : Double
+  precision : Double
+  recall : Double
+  f1 : Double
+  confusion_matrix : ConfusionMatrix
+}
+
+pub struct ConfusionMatrix {
+  labels : Array[String]
+  counts : Map[String, Map[String, Int]]
+  mut total : Int
+  mut correct : Int
+}
+pub fn ConfusionMatrix::add(Self, String, String) -> Unit
+pub fn ConfusionMatrix::count(Self, String, String) -> Int
+pub fn ConfusionMatrix::new(Array[String]) -> Self
+
+pub struct DocumentAnalysis {
+  text : String
+  sentences : Array[String]
+  tokens : Array[String]
+  keywords : Array[(String, Double)]
+  summary : Array[String]
+  classification : String?
+}
+
+pub struct DocumentPipeline {
+  segmenter : @segment.DictSegmenter
+  classifier : NaiveBayesClassifier?
+}
+pub fn DocumentPipeline::analyze(Self, String, Int, Int) -> Result[DocumentAnalysis, String]
+pub fn DocumentPipeline::new() -> Self
+pub fn DocumentPipeline::with_classifier(NaiveBayesClassifier) -> Self
+
 pub struct NaiveBayesClassifier {
   classes : Map[String, Unit]
   class_counts : Map[String, Int]
@@ -26,6 +71,19 @@ pub struct NaiveBayesClassifier {
 pub fn NaiveBayesClassifier::new() -> Self
 pub fn NaiveBayesClassifier::predict(Self, Array[String]) -> String?
 pub fn NaiveBayesClassifier::train(Self, String, Array[String]) -> Unit
+
+pub struct SentenceSplitter {
+}
+pub fn SentenceSplitter::new() -> Self
+pub fn SentenceSplitter::split(Self, String) -> Array[String]
+
+pub struct SummaryOptions {
+  max_sentences : Int
+  min_sentence_length : Int
+  position_weight : Double
+  redundancy_threshold : Double
+}
+pub fn SummaryOptions::new(Int, Int, Double, Double) -> Result[Self, String]
 
 pub struct TFIDF {
   mut doc_count : Int
@@ -49,6 +107,7 @@ pub struct TextSummarizer {
 }
 pub fn TextSummarizer::new() -> Self
 pub fn TextSummarizer::summarize(Self, String, Int) -> Array[String]
+pub fn TextSummarizer::summarize_with_options(Self, String, SummaryOptions) -> Result[Array[String], String]
 
 // Type aliases
 

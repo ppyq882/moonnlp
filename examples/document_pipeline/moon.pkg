@@ -1,0 +1,6 @@
+import {
+  "ppyq882/moonnlp/analysis",
+  "ppyq882/moonnlp/segment",
+}
+
+pkgtype(kind: "executable")

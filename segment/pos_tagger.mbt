@@ -11,6 +11,11 @@ pub struct POSTagger {
 
 ///|
 pub fn POSTagger::new() -> POSTagger {
+  POSTagger::from_lexicon(get_default_dict())
+}
+
+///|
+fn POSTagger::from_lexicon(dict : Array[(String, Int, String)]) -> POSTagger {
   let tags = ["n", "v", "a", "r", "p", "c", "d", "q", "uj", "ul", "x"]
   let tag_to_idx = Map([])
   for i in 0..<tags.length() {
@@ -37,7 +42,6 @@ pub fn POSTagger::new() -> POSTagger {
   let tag_totals = Array::make(11, 0)
   let vocab = Map([])
 
-  let dict = get_default_dict()
   for item in dict {
     let (word, freq, tag) = item
     vocab.set(word, ())
@@ -57,7 +61,11 @@ pub fn POSTagger::new() -> POSTagger {
         inner_map
       }
     }
-    m.set(tag, freq)
+    let previous = match m.get(tag) {
+      Some(existing) => existing
+      None => 0
+    }
+    m.set(tag, previous + freq)
   }
 
   {

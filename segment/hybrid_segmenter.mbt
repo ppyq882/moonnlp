@@ -28,7 +28,7 @@ pub fn HybridSegmenter::segment(
     }
 
     // Check if the current token is a single Chinese character
-    if chars.length() == 1 && @core.is_chinese(chars[0]) {
+    if chars.length() == 1 && is_chinese_char(chars[0]) {
       // Find the range of consecutive single Chinese characters
       let temp_chars = [chars[0]]
       let mut j = i + 1
@@ -38,7 +38,7 @@ pub fn HybridSegmenter::segment(
         for c in next_tok {
           next_chars.push(c)
         }
-        if next_chars.length() == 1 && @core.is_chinese(next_chars[0]) {
+        if next_chars.length() == 1 && is_chinese_char(next_chars[0]) {
           temp_chars.push(next_chars[0])
           j += 1
         } else {

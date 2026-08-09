@@ -37,11 +37,17 @@ pub fn[T] DoubleArrayTrie::exact_match(
 }
 
 ///|
+/// Returns the length of the longest matching prefix starting at `start_idx`.
+/// Returns 0 when `start_idx` is outside `chars` or no match is found.
 pub fn[T] DoubleArrayTrie::longest_prefix(
   self : DoubleArrayTrie[T],
   chars : Array[Char],
   start_idx : Int,
 ) -> Int {
+  if start_idx < 0 || start_idx >= chars.length() {
+    return 0
+  }
+
   let mut state = 0
   let mut longest_len = 0
   let mut current_len = 0
@@ -79,6 +85,8 @@ pub fn[T] DoubleArrayTrie::build(trie : Trie[T]) -> DoubleArrayTrie[T] {
   let mut base = Array::make(1024, 0)
   let mut check = Array::make(1024, -1)
   let mut values : Array[T?] = Array::make(1024, None)
+
+  values[0] = trie.root.value
 
   let queue = []
   queue.push({ node: trie.root, dat_idx: 0 })
@@ -138,12 +146,14 @@ pub fn[T] DoubleArrayTrie::build(trie : Trie[T]) -> DoubleArrayTrie[T] {
     for c in children_chars {
       let code = c.to_int()
       let next_idx = base_val + code
-      let child_node = parent.children.get(c).unwrap()
-
-      check[next_idx] = p_idx
-      values[next_idx] = child_node.value
-
-      queue.push({ node: child_node, dat_idx: next_idx })
+      match parent.children.get(c) {
+        Some(child_node) => {
+          check[next_idx] = p_idx
+          values[next_idx] = child_node.value
+          queue.push({ node: child_node, dat_idx: next_idx })
+        }
+        None => ()
+      }
     }
   }
 

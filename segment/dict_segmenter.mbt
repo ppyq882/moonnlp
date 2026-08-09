@@ -42,19 +42,12 @@ pub fn DictSegmenter::add_word(self : DictSegmenter, word : String) -> Unit {
 
 ///|
 pub fn DictSegmenter::fmm(self : DictSegmenter, text : String) -> Array[String] {
-  let chars = []
-  for c in text {
-    chars.push(c)
-  }
-  fmm_chars(self.dat, chars)
+  fmm_chars(self.dat, text_chars(text))
 }
 
 ///|
 pub fn DictSegmenter::bmm(self : DictSegmenter, text : String) -> Array[String] {
-  let chars = []
-  for c in text {
-    chars.push(c)
-  }
+  let chars = text_chars(text)
   let rev_chars = []
   for i in 0..<chars.length() {
     rev_chars.push(chars[chars.length() - 1 - i])
@@ -119,7 +112,7 @@ fn count_single_chars(tokens : Array[String]) -> Int {
     for c in t {
       chars.push(c)
     }
-    if chars.length() == 1 && @core.is_chinese(chars[0]) {
+    if chars.length() == 1 && is_chinese_char(chars[0]) {
       count += 1
     }
   }
@@ -137,7 +130,7 @@ fn fmm_chars(
 
   while i < n {
     let c = chars[i]
-    if @core.is_chinese(c) {
+    if is_chinese_char(c) {
       let len = dat.longest_prefix(chars, i)
       if len > 0 {
         let mut word = ""
@@ -150,32 +143,10 @@ fn fmm_chars(
         result.push(c.to_string())
         i += 1
       }
-    } else if @core.is_whitespace(c) {
-      let mut ws = ""
-      let mut j = i
-      while j < n && @core.is_whitespace(chars[j]) {
-        ws += chars[j].to_string()
-        j += 1
-      }
-      result.push(ws)
-      i = j
-    } else if @core.is_punctuation(c) {
-      result.push(c.to_string())
-      i += 1
     } else {
-      let mut word = ""
-      let mut j = i
-      while j < n && @core.is_alphanumeric(chars[j]) {
-        word += chars[j].to_string()
-        j += 1
-      }
-      if j > i {
-        result.push(word)
-        i = j
-      } else {
-        result.push(c.to_string())
-        i += 1
-      }
+      let (token, next) = scan_non_chinese(chars, i)
+      result.push(token)
+      i = next
     }
   }
 

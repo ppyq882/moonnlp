@@ -27,6 +27,19 @@ test "trie prefix search" {
 }
 
 ///|
+test "trie prefix search returns zero for a negative start" {
+  let trie : Trie[Int] = Trie::new()
+  trie.insert("月亮", 7)
+
+  let chars = []
+  for c in "月亮" {
+    chars.push(c)
+  }
+
+  assert_true(trie.longest_prefix(chars, -1) == 0)
+}
+
+///|
 test "unicode utilities" {
   assert_true(is_chinese('中') == true)
   assert_true(is_chinese('a') == false)

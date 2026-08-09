@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "ppyq882/moonnlp/cmd/demo"
+
+// Values
+pub fn report() -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

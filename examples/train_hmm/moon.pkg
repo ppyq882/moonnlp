@@ -1,5 +1,5 @@
 import {
-  "ppyq882/moonnlp/cmd/demo",
+  "ppyq882/moonnlp/segment",
 }
 
 pkgtype(kind: "executable")

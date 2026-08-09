@@ -1,0 +1,4 @@
+import {
+  "ppyq882/moonnlp/segment",
+  "ppyq882/moonnlp/analysis",
+}

@@ -26,10 +26,7 @@ pub fn HMMSegmenter::segment(
   self : HMMSegmenter,
   text : String,
 ) -> Array[String] {
-  let chars = []
-  for c in text {
-    chars.push(c)
-  }
+  let chars = text_chars(text)
 
   let n = chars.length()
   if n == 0 {
@@ -38,9 +35,9 @@ pub fn HMMSegmenter::segment(
 
   // 1. Check if the string contains Chinese.
   // If it's English or whitespace, HMM doesn't apply well, so we handle it similarly to FMM.
-  let has_chinese = has_chinese_char(chars)
+  let has_chinese = contains_chinese(chars)
   if !has_chinese {
-    return fallback_segment(chars)
+    return segment_non_chinese(chars)
   }
 
   // 2. Viterbi algorithm
@@ -98,35 +95,10 @@ pub fn HMMSegmenter::segment(
   let mut i = 0
   while i < n {
     let c = chars[i]
-    if !@core.is_chinese(c) {
-      // process non-chinese group
-      if @core.is_whitespace(c) {
-        let mut ws = ""
-        let mut j = i
-        while j < n && @core.is_whitespace(chars[j]) {
-          ws += chars[j].to_string()
-          j += 1
-        }
-        result.push(ws)
-        i = j
-      } else if @core.is_punctuation(c) {
-        result.push(c.to_string())
-        i += 1
-      } else {
-        let mut word = ""
-        let mut j = i
-        while j < n && @core.is_alphanumeric(chars[j]) {
-          word += chars[j].to_string()
-          j += 1
-        }
-        if j > i {
-          result.push(word)
-          i = j
-        } else {
-          result.push(c.to_string())
-          i += 1
-        }
-      }
+    if !is_chinese_char(c) {
+      let (token, next) = scan_non_chinese(chars, i)
+      result.push(token)
+      i = next
     } else {
       let st = states[i]
       if st == 3 { // S
@@ -137,7 +109,7 @@ pub fn HMMSegmenter::segment(
         let mut j = i + 1
         while j < n {
           let next_c = chars[j]
-          if !@core.is_chinese(next_c) {
+          if !is_chinese_char(next_c) {
             break
           }
           let next_st = states[j]
@@ -174,52 +146,4 @@ fn HMMSegmenter::get_emission(
     Some(probs) => probs[state]
     None => self.unknown_emit[state]
   }
-}
-
-///|
-fn has_chinese_char(chars : Array[Char]) -> Bool {
-  for c in chars {
-    if @core.is_chinese(c) {
-      return true
-    }
-  }
-  false
-}
-
-///|
-fn fallback_segment(chars : Array[Char]) -> Array[String] {
-  let result = []
-  let mut i = 0
-  let n = chars.length()
-  while i < n {
-    let c = chars[i]
-    if @core.is_whitespace(c) {
-      let mut ws = ""
-      let mut j = i
-      while j < n && @core.is_whitespace(chars[j]) {
-        ws += chars[j].to_string()
-        j += 1
-      }
-      result.push(ws)
-      i = j
-    } else if @core.is_punctuation(c) {
-      result.push(c.to_string())
-      i += 1
-    } else {
-      let mut word = ""
-      let mut j = i
-      while j < n && @core.is_alphanumeric(chars[j]) {
-        word += chars[j].to_string()
-        j += 1
-      }
-      if j > i {
-        result.push(word)
-        i = j
-      } else {
-        result.push(c.to_string())
-        i += 1
-      }
-    }
-  }
-  result
 }

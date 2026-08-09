@@ -57,7 +57,11 @@ pub fn POSTagger::new() -> POSTagger {
         inner_map
       }
     }
-    m.set(tag, freq)
+    let previous = match m.get(tag) {
+      Some(existing) => existing
+      None => 0
+    }
+    m.set(tag, previous + freq)
   }
 
   {

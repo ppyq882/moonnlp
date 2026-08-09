@@ -64,3 +64,34 @@ test "hmm segmenter preserves non-Chinese fallback" {
 test "hmm segmenter empty input stays empty" {
   assert_true(HMMSegmenter::new().segment("") == [])
 }
+
+///|
+test "segmenters keep mixed Unicode token boundaries" {
+  let text = "北京的蓝精灵MoonBit2026 😀！"
+  let expected_suffix = ["MoonBit2026", " ", "😀", "！"]
+  let dict = DictSegmenter::new().segment(text)
+  let hmm = HMMSegmenter::new().segment(text)
+  let hybrid = HybridSegmenter::new().segment(text)
+
+  assert_true(dict[dict.length() - 4:] == expected_suffix)
+  assert_true(hmm[hmm.length() - 4:] == expected_suffix)
+  assert_true(hybrid[hybrid.length() - 4:] == expected_suffix)
+}
+
+///|
+test "segmenters terminate and emit pure emoji tokens" {
+  let expected = ["😀", "🚀"]
+
+  assert_true(DictSegmenter::new().segment("😀🚀") == expected)
+  assert_true(HMMSegmenter::new().segment("😀🚀") == expected)
+  assert_true(HybridSegmenter::new().segment("😀🚀") == expected)
+}
+
+///|
+test "segmenters preserve whitespace and punctuation boundaries" {
+  let expected = [" \t", "，", "!"]
+
+  assert_true(DictSegmenter::new().segment(" \t，!") == expected)
+  assert_true(HMMSegmenter::new().segment(" \t，!") == expected)
+  assert_true(HybridSegmenter::new().segment(" \t，!") == expected)
+}

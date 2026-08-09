@@ -21,7 +21,7 @@ pub fn HMMModel::try_train(
   if corpus.length() == 0 {
     return Err("HMM training corpus must not be empty")
   }
-  if smoothing <= 0.0 {
+  if smoothing <= 0.0 || smoothing.is_nan() || smoothing.is_inf() {
     return Err("HMM smoothing must be positive")
   }
   for sentence in corpus {

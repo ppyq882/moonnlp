@@ -23,6 +23,14 @@ test "hmm model rejects empty corpus" {
 }
 
 ///|
+test "hmm model rejects empty sentence" {
+  match HMMModel::train([[]]) {
+    Ok(_) => assert_true(false)
+    Err(_) => assert_true(true)
+  }
+}
+
+///|
 test "hmm model rejects empty token" {
   match HMMModel::train([["南京", ""]]) {
     Ok(_) => assert_true(false)
@@ -37,6 +45,22 @@ test "hmm model rejects non-positive smoothing" {
     Err(_) => assert_true(true)
   }
   match HMMModel::try_train(tokenized_training_corpus(), -1.0) {
+    Ok(_) => assert_true(false)
+    Err(_) => assert_true(true)
+  }
+}
+
+///|
+test "hmm model rejects NaN smoothing" {
+  match HMMModel::try_train(tokenized_training_corpus(), 0.0 / 0.0) {
+    Ok(_) => assert_true(false)
+    Err(_) => assert_true(true)
+  }
+}
+
+///|
+test "hmm model rejects positive infinity smoothing" {
+  match HMMModel::try_train(tokenized_training_corpus(), 1.0 / 0.0) {
     Ok(_) => assert_true(false)
     Err(_) => assert_true(true)
   }

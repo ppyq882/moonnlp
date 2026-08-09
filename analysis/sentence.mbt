@@ -7,6 +7,10 @@ pub fn SentenceSplitter::new() -> SentenceSplitter {
 }
 
 ///|
+/// Splits text into trimmed, nonempty sentences. Empty or whitespace-only
+/// input, including input containing only sentence-ending punctuation, returns
+/// an empty array. Consecutive terminators stay with the preceding sentence,
+/// and trailing text without a terminator is returned as the final sentence.
 pub fn SentenceSplitter::split(
   _self : SentenceSplitter,
   text : String,

@@ -24,6 +24,12 @@ pub fn ConfusionMatrix::add(
   actual : String,
   predicted : String,
 ) -> Unit {
+  if !self.labels.contains(actual) {
+    self.labels.push(actual)
+  }
+  if !self.labels.contains(predicted) {
+    self.labels.push(predicted)
+  }
   let predictions = match self.counts.get(actual) {
     Some(existing) => existing
     None => {
@@ -69,6 +75,9 @@ pub struct ClassificationMetrics {
 }
 
 ///|
+/// Computes set-style precision, recall, and F1 for unique boundaries. A
+/// zero predicted or gold boundary count produces `0.0` for its corresponding
+/// metric, so empty inputs never produce `NaN` or infinity.
 pub fn evaluate_boundary_metrics(
   predicted : Array[Int],
   gold : Array[Int],

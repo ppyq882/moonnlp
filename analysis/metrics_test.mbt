@@ -94,3 +94,13 @@ test "classification metrics return zero values for empty labels" {
     Err(_) => assert_true(false)
   }
 }
+
+///|
+test "confusion matrix add retains labels from an empty initial set" {
+  let matrix = ConfusionMatrix::new([])
+
+  matrix.add("actual-label", "predicted-label")
+
+  assert_true(matrix.labels == ["actual-label", "predicted-label"])
+  assert_true(matrix.count("actual-label", "predicted-label") == 1)
+}

@@ -11,4 +11,3 @@ pub fn report() -> String
 // Type aliases
 
 // Traits
-

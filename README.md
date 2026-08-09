@@ -39,6 +39,20 @@ It prints sentence and token counts plus real keyword, summary, and optional cla
 
 ### Segmentation and HMM training
 
+要复制下面的库代码，请在模块目录下创建一个包，例如 `examples/my_demo/`。
+最小 `moon.pkg` 配置为：
+
+```json
+import {
+  "ppyq882/moonnlp/segment",
+  "ppyq882/moonnlp/analysis",
+}
+```
+
+将代码保存为同目录的 `main.mbt`，然后从仓库根目录运行
+`moon run examples/my_demo`。仓库中的 `examples/train_hmm` 和
+`examples/document_pipeline` 是同样方式组织的完整可运行版本。
+
 ```moonbit
 let corpus = [["南京", "长江", "大桥"], ["南京", "长江"]]
 match @segment.HMMModel::train(corpus) {
@@ -55,6 +69,9 @@ Run the corresponding example from the repository root:
 ```powershell
 moon run examples/train_hmm
 ```
+
+上面的片段需要在 `moon.pkg` 中同时声明 `segment`；文档管线片段还需要
+`analysis`。完整可复制版本见 `examples/document_pipeline/main.mbt`。
 
 ### Document analysis
 

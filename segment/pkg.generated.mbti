@@ -24,11 +24,22 @@ pub fn DictSegmenter::fmm(Self, String) -> Array[String]
 pub fn DictSegmenter::new() -> Self
 pub fn DictSegmenter::segment(Self, String) -> Array[String]
 
+pub struct HMMModel {
+  pi : Array[Double]
+  trans : Array[Array[Double]]
+  emit : Map[Char, Array[Double]]
+  unknown_emit : Array[Double]
+}
+pub fn HMMModel::train(Array[Array[String]]) -> Result[Self, String]
+pub fn HMMModel::try_train(Array[Array[String]], Double) -> Result[Self, String]
+
 pub struct HMMSegmenter {
   pi : Array[Double]
   trans : Array[Array[Double]]
   emit : Map[Char, Array[Double]]
+  unknown_emit : Array[Double]
 }
+pub fn HMMSegmenter::from_model(HMMModel) -> Self
 pub fn HMMSegmenter::new() -> Self
 pub fn HMMSegmenter::segment(Self, String) -> Array[String]
 

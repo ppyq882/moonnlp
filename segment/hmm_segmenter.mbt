@@ -3,24 +3,22 @@ pub struct HMMSegmenter {
   pi : Array[Double]
   trans : Array[Array[Double]]
   emit : Map[Char, Array[Double]]
+  unknown_emit : Array[Double]
 }
 
 ///|
 pub fn HMMSegmenter::new() -> HMMSegmenter {
-  let emit = Map([])
-  populate_emissions(emit)
+  HMMSegmenter::from_model(default_hmm_model())
+}
 
-  let pi = [-0.262686, -3.14e100, -3.14e100, -1.46526]
-
-  // trans[state] to next state. order: B, M, E, S
-  let trans = [
-    [-3.14e100, -1.96, -0.15, -3.14e100], // B can go to M or E
-    [-3.14e100, -1.96, -0.15, -3.14e100], // M can go to M or E
-    [-0.59, -3.14e100, -3.14e100, -0.79], // E can go to B or S
-    [-0.73, -3.14e100, -3.14e100, -0.65], // S can go to B or S
-  ]
-
-  { pi, trans, emit }
+///|
+pub fn HMMSegmenter::from_model(model : HMMModel) -> HMMSegmenter {
+  {
+    pi: model.pi,
+    trans: model.trans,
+    emit: model.emit,
+    unknown_emit: model.unknown_emit,
+  }
 }
 
 ///|
@@ -78,14 +76,10 @@ pub fn HMMSegmenter::segment(
     }
   }
 
-  // Find best last state
-  let mut max_last_val = -1.0e300
-  let mut best_last_state = 3 // default to S
-  for y in 0..<4 {
-    if v[n - 1][y] > max_last_val {
-      max_last_val = v[n - 1][y]
-      best_last_state = y
-    }
+  // A valid word sequence can only end in E or S.
+  let mut best_last_state = 2
+  if v[n - 1][3] > v[n - 1][2] {
+    best_last_state = 3
   }
 
   // Backtrack
@@ -178,18 +172,7 @@ fn HMMSegmenter::get_emission(
 ) -> Double {
   match self.emit.get(c) {
     Some(probs) => probs[state]
-    None =>
-      // Generalized Add-k log emission probability for unobserved Chinese characters
-      if @core.is_chinese(c) {
-        match state {
-          0 => -3.0 // B state
-          1 => -3.5 // M state
-          2 => -3.5 // E state
-          _ => -2.5 // S state
-        }
-      } else {
-        -20.0
-      }
+    None => self.unknown_emit[state]
   }
 }
 
@@ -239,43 +222,4 @@ fn fallback_segment(chars : Array[Char]) -> Array[String] {
     }
   }
   result
-}
-
-///|
-fn populate_emissions(emit : Map[Char, Array[Double]]) -> Unit {
-  let b_only = [
-    '中', '大', '公', '计', '自', '处', '开', '软', '生', '起', '科',
-    '研', '发', '国', '蓝', '人', '文', '理', '动', '美',
-  ]
-  let e_only = [
-    '华', '民', '国', '员', '算', '然', '理', '发', '件', '命', '源',
-    '学', '究', '展', '家', '灵', '心', '情', '手', '化',
-  ]
-  let m_only = ['和', '共', '精', '通', '关']
-  let s_only = [
-    '我', '你', '他', '的', '了', '在', '是', '有', '与', '这', '那',
-    '都', '很', '个',
-  ]
-
-  for c in b_only {
-    emit.set(c, [-1.0, -10.0, -10.0, -3.0])
-  }
-  for c in e_only {
-    match emit.get(c) {
-      Some(arr) => arr[2] = -1.0
-      None => emit.set(c, [-10.0, -10.0, -1.0, -3.0])
-    }
-  }
-  for c in m_only {
-    match emit.get(c) {
-      Some(arr) => arr[1] = -1.0
-      None => emit.set(c, [-10.0, -1.0, -10.0, -3.0])
-    }
-  }
-  for c in s_only {
-    match emit.get(c) {
-      Some(arr) => arr[3] = -0.5
-      None => emit.set(c, [-5.0, -10.0, -5.0, -0.5])
-    }
-  }
 }

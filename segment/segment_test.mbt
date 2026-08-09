@@ -52,3 +52,15 @@ test "hmm segmenter emoji non-infinite-loop" {
   let res = seg.segment("自然语言处理😀🚀")
   assert_true(res.length() > 0)
 }
+
+///|
+test "hmm segmenter preserves non-Chinese fallback" {
+  let seg = HMMSegmenter::new()
+  let res = seg.segment("MoonBit 2026!😀")
+  assert_true(res == ["MoonBit", " ", "2026", "!", "😀"])
+}
+
+///|
+test "hmm segmenter empty input stays empty" {
+  assert_true(HMMSegmenter::new().segment("") == [])
+}

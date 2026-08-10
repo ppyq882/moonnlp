@@ -171,15 +171,19 @@ fn train_hmm_model(
 }
 
 ///|
+// The library entry point deliberately uses a neutral BMES prior.  Callers
+// should train HMMModel with domain data when vocabulary-sensitive behaviour
+// is required; the default must not encode a named example or lexicon.
 fn default_hmm_model() -> HMMModel {
-  train_hmm_model(
-    [
-      ["的", "蓝精灵"],
-      ["我", "喜欢", "自然", "语言", "处理"],
-      ["研究", "生命", "起源"],
-      ["中华人民共和国"],
-      ["北京", "大学", "学习"],
-    ],
-    0.1,
-  )
+  let impossible = -1.0e300
+  let pi = [@math.ln(0.99), impossible, impossible, @math.ln(0.01)]
+  let trans = [
+    [impossible, @math.ln(0.95), @math.ln(0.05), impossible],
+    [impossible, @math.ln(0.95), @math.ln(0.05), impossible],
+    [@math.ln(0.5), impossible, impossible, @math.ln(0.5)],
+    [impossible, impossible, impossible, @math.ln(1.0)],
+  ]
+  let emit : Map[Char, Array[Double]] = Map([])
+  let unknown_emit = [0.0, 0.0, 0.0, 0.0]
+  { pi, trans, emit, unknown_emit }
 }

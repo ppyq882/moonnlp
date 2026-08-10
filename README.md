@@ -1,17 +1,33 @@
 # MoonNLP
 
-MoonNLP is a pure-MoonBit library for deterministic Chinese-oriented text processing. It provides dictionary, HMM, and hybrid segmentation; Double Array Trie lookup; part-of-speech tagging; TF-IDF and TextRank keyword extraction; extractive summaries; a small Naive Bayes classifier; and analysis metrics.
+MoonNLP is a pure-MoonBit library for deterministic, Chinese-oriented text processing. It provides dictionary, HMM, and hybrid segmentation; Double Array Trie lookup; part-of-speech tagging; TF-IDF and TextRank keyword extraction; extractive summaries; a small Naive Bayes classifier; and analysis metrics.
 
-It is a library and a collection of executable demonstrations. It is not a hosted service, a general-purpose model, a production-quality linguistic corpus, or a guarantee of linguistic accuracy for every language and domain.
+The project is a reusable library with runnable demonstrations. It is not a hosted service, a general-purpose language model, a production corpus, or a guarantee of linguistic accuracy for every language and domain.
+
+## Scope and features
+
+- `core`: Trie and Double Array Trie data structures with checked prefix lookup.
+- `segment`: dictionary FMM/BMM/BiMM segmentation, trainable BMES HMM segmentation, hybrid segmentation, and POS tagging.
+- `analysis`: sentence splitting, TF-IDF, TextRank, similarity, classification, metrics, configurable extractive summaries, and a document pipeline.
+- `cmd`, `examples`, and `benchmarks`: deterministic executable demonstrations and a workload smoke harness.
+
+## Requirements
+
+- Git
+- MoonBit toolchain with `moon` and `moonc`
+- A C compiler is needed only for the native target on machines where MoonBit requires one.
+
+The checked worktree used Moon `0.1.20260713` and Moonc `v0.10.4`. The workflow installs the current stable toolchain instead of pinning a historical installer version.
 
 ## Clone, build, and test
 
-Run these commands from a PowerShell terminal. They are the project-local workflow; they do not publish anything or contact a registry.
+Run these commands from the repository root:
 
 ```powershell
 git clone https://github.com/ppyq882/moonnlp.git
-cd moonnlp
-moon version
+Set-Location moonnlp
+moon version --all
+moon update
 moon fmt --check
 moon check --deny-warn --target all
 moon build --target all
@@ -19,73 +35,60 @@ moon test --deny-warn --target all
 moon info --target all
 ```
 
-The local acceptance wrapper is also available:
+The repository also contains a local acceptance wrapper:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/verify_acceptance.ps1 -SkipUpdate
 ```
 
-The current toolchain in this worktree is `moon 0.1.20260713` with `moonc v0.10.4`. Its `moon fmt` and `moon info` commands do not support `--deny-warn`; the wrapper uses `moon fmt --check`, `moon info --target all`, and a generated-interface diff check instead. Use newer compatible stable toolchains when their documented flags differ.
+`moon fmt --deny-warn` and `moon info --deny-warn` are not accepted by the checked CLI. The wrapper therefore uses `moon fmt --check`, `moon info --target all`, and a generated-interface diff check. Do not interpret the unsupported flags as passed checks.
 
 ## Quick start
 
-The executable is intentionally a deterministic no-argument demo. It does not pretend to support flags that this project has not implemented.
+The CLI demo intentionally takes no arguments and prints deterministic analysis output:
 
 ```powershell
 moon run cmd/main
 ```
 
-It prints sentence and token counts plus real keyword, summary, and optional classification output from `DocumentPipeline`.
+It exercises tokenization, keywords, extractive summary, and optional classification through `DocumentPipeline`.
 
-### Segmentation and HMM training
+## HMM training example
 
-要复制下面的库代码，请在模块目录下创建一个包，例如 `examples/my_demo/`。
-最小 `moon.pkg` 配置为：
-
-```json
-import {
-  "ppyq882/moonnlp/segment",
-  "ppyq882/moonnlp/analysis",
-}
-```
-
-将代码保存为同目录的 `main.mbt`，然后从仓库根目录运行
-`moon run examples/my_demo`。仓库中的 `examples/train_hmm` 和
-`examples/document_pipeline` 是同样方式组织的完整可运行版本。
+Use tokenized input to train a vocabulary-sensitive model. The default `HMMSegmenter::new()` is only a neutral BMES fallback; it does not contain a named sample lexicon. For domain quality, train a model from your own tokenized corpus and pass it to `HMMSegmenter::from_model`.
 
 ```moonbit
-let corpus = [["南京", "长江", "大桥"], ["南京", "长江"]]
+let corpus = [["alpha", "beta"], ["alpha", "gamma"]]
 match @segment.HMMModel::train(corpus) {
   Ok(model) => {
     let segmenter = @segment.HMMSegmenter::from_model(model)
-    println(segmenter.segment("南京长江大桥"))
+    println(segmenter.segment("alphabeta"))
   }
-  Err(message) => println(message)
+  Err(message) => println("HMM training error: " + message)
 }
 ```
 
-Run the corresponding example from the repository root:
+Run the checked executable example from the repository root:
 
 ```powershell
 moon run examples/train_hmm
 ```
 
-上面的片段需要在 `moon.pkg` 中同时声明 `segment`；文档管线片段还需要
-`analysis`。完整可复制版本见 `examples/document_pipeline/main.mbt`。
+For Chinese-domain use, replace the example corpus with tokenized Unicode text from your application and validate the resulting segmentation against held-out examples.
 
-### Document analysis
+## Document analysis example
 
 ```moonbit
 let classifier = @analysis.NaiveBayesClassifier::new()
-classifier.train("technology", ["MoonBit", "自然语言处理"])
+classifier.train("technology", ["MoonBit", "compiler", "tokenizer"])
 let pipeline = @analysis.DocumentPipeline::with_classifier(classifier)
-match pipeline.analyze("MoonBit 支持自然语言处理。", 3, 1) {
+match pipeline.analyze("MoonBit compiler tokenizer", 3, 1) {
   Ok(result) => println(result.summary)
-  Err(message) => println(message)
+  Err(message) => println("analysis error: " + message)
 }
 ```
 
-The complete executable version trains a small classifier and prints sentence and token counts, keywords, summary, and classification:
+Run the complete executable pipeline:
 
 ```powershell
 moon run examples/document_pipeline
@@ -93,13 +96,23 @@ moon run examples/document_pipeline
 
 ## Public API and architecture
 
-Packages are local to this module and imported as `@core`, `@segment`, and `@analysis` in the examples above. The public interfaces are generated in each package's `pkg.generated.mbti` file after `moon info`.
+Import the local packages from a package inside this module:
 
-- `core`: `Trie` and `DoubleArrayTrie` plus Unicode character predicates.
-- `segment`: dictionary segmentation, trainable `HMMModel`, `HMMSegmenter`, `HybridSegmenter`, and `POSTagger`.
-- `analysis`: keyword extraction, summary APIs, document pipeline, classifier, similarity, sentence splitting, and metrics.
+```json
+import {
+  "ppyq882/moonnlp/core",
+  "ppyq882/moonnlp/segment",
+  "ppyq882/moonnlp/analysis",
+}
+```
 
-See [architecture](docs/architecture.md) for data flow and [API notes](docs/api.md) for behavior and error boundaries.
+The generated interfaces are refreshed by `moon info --target all`.
+
+- `core` owns checked prefix data structures and Unicode character helpers.
+- `segment` consumes the shared token policy. Dictionary lookup uses the Double Array Trie; HMM training computes initial, transition, and emission probabilities with smoothing; hybrid segmentation combines dictionary and HMM paths.
+- `analysis` composes tokenization with statistical scoring and classification. `DocumentPipeline` is the convenience boundary for sentences, tokens, keywords, summaries, and an optional label.
+
+See [docs/architecture.md](docs/architecture.md) for data flow and [docs/api.md](docs/api.md) for API contracts and error boundaries.
 
 ## Benchmark scope
 
@@ -107,23 +120,65 @@ See [architecture](docs/architecture.md) for data flow and [API notes](docs/api.
 moon run benchmarks
 ```
 
-`benchmarks` is a deterministic workload smoke harness: it repeats DAT lookup, segmentation, keyword extraction, and summary with models and input data built outside the workload loop. The available portable API in this project does not provide a monotonic timer, so it reports iterations and a checksum only. It is not a performance measurement and does not support a speed claim.
+The benchmark is a deterministic workload smoke harness. It constructs data and models outside the loop, repeats DAT lookup, segmentation, keyword extraction, and summary work, and prints iterations plus a checksum. The portable API used here does not expose a monotonic timer, so the output is not a throughput claim.
 
-## Mooncakes status
+## Mooncakes
 
-`moon.mod` declares the local module version as `0.2.0`. This worktree does not verify that a `ppyq882/moonnlp` package has been published to Mooncakes, so no registry installation command is claimed to work. Until a maintainer verifies a published package and version through an authorized release process, use a clone of this repository and its local module packages. Do not infer registry publication from the version field.
+The module metadata is prepared for publication as `ppyq882/moonnlp` version `0.2.0`:
+
+```powershell
+moon publish --dry-run
+```
+
+Publication is not claimed in this repository until a maintainer has authenticated to Mooncakes and completed the release. After an authorized publication, consumers can install the published version with:
+
+```powershell
+moon add ppyq882/moonnlp
+```
+
+Before publication is verified, use the clone-and-build workflow above. Never infer registry availability from the version field alone.
+
+## CI
+
+GitHub Actions runs on Ubuntu, macOS, and Windows. Each job installs the current stable MoonBit toolchain and runs the acceptance wrapper:
+
+- `moon version --all`
+- `moon fmt --check`
+- `moon check --deny-warn --target all`
+- `moon build --target wasm,wasm-gc,js`
+- `moon info --target all`
+- generated-interface drift check
+- `moon test --deny-warn --target wasm,wasm-gc,js`
+- native build and test when the runner has a C compiler
+
+See [.github/workflows/ci.yml](.github/workflows/ci.yml) and [docs/acceptance-checklist.md](docs/acceptance-checklist.md).
 
 ## Development, contribution, and release
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. It defines the required local gates, review expectations, and release authorization boundary. The local unreleased history is summarized in [CHANGELOG.md](CHANGELOG.md).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before changing public APIs. The expected local loop is:
+
+```powershell
+moon fmt --check
+moon check --deny-warn --target all
+moon build --target all
+moon test --deny-warn --target all
+moon info --target all
+git diff --check
+```
+
+Add behavior-level tests for normal paths, invalid input, errors, boundaries, regressions, examples, and important performance paths. Review generated interfaces after `moon info`. Update [CHANGELOG.md](CHANGELOG.md) for user-visible changes.
+
+Release and Mooncakes publication require explicit maintainer authorization, a verified creator account, a release tag, and platform credentials outside source control. Ordinary pull requests must not require publication secrets.
 
 ## License, references, and acknowledgement
 
-MoonNLP is licensed under [Apache-2.0](LICENSE). Algorithmic references and the evidence limits around the bundled lexicon are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Those references describe algorithms or provenance questions; they do not claim copied third-party code.
+MoonNLP is licensed under [Apache-2.0](LICENSE). The algorithmic references, lexicon provenance limits, license scope, and acknowledgement policy are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+The HMM design is informed by Rabiner's HMM tutorial, TF-IDF by Salton and Buckley, and TextRank by Mihalcea and Tarau. These are design references only; this repository does not claim copied source code. The bundled lexicon has not yet been tied to a pinned upstream snapshot, so no stronger data-license or reuse claim is made.
 
 ## Known boundaries
 
-- Segmentation, tagging, and summary quality depend on the small included data and deterministic algorithms; evaluate them against your domain before use.
-- `HMMModel` is trained from tokenized input, not a pre-trained corpus service.
-- `NaiveBayesClassifier` is a small in-memory classifier and has no persistence or probability-calibration API.
-- The CLI is a demo, not a safe argument-parsing interface.
+- Segmentation, tagging, and summary quality depend on deterministic algorithms and the included data; evaluate them against your domain.
+- `HMMModel` is a trainable model API, not a pretrained language model service.
+- `NaiveBayesClassifier` is a small in-memory classifier without persistence or probability calibration.
+- The CLI is a deterministic demonstration, not a general-purpose argument parser.

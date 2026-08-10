@@ -124,19 +124,19 @@ The benchmark is a deterministic workload smoke harness. It constructs data and 
 
 ## Mooncakes
 
-The module metadata is prepared for publication as `ppyq882/moonnlp` version `0.2.0`:
+Version `0.2.0` of `ppyq882/moonnlp` is published to Mooncakes. The package metadata is declared in `moon.mod`, and the following installation preflight successfully resolved the registry index:
 
 ```powershell
-moon publish --dry-run
+moon add ppyq882/moonnlp --dry-run
 ```
 
-Publication is not claimed in this repository until a maintainer has authenticated to Mooncakes and completed the release. After an authorized publication, consumers can install the published version with:
+Install the published package in another MoonBit module with:
 
 ```powershell
 moon add ppyq882/moonnlp
 ```
 
-Before publication is verified, use the clone-and-build workflow above. Never infer registry availability from the version field alone.
+The local publish command correctly rejects a duplicate `0.2.0` upload with HTTP 409, which confirms that the version already exists. Future releases must increment the semantic version, update [CHANGELOG.md](CHANGELOG.md), run the full gates, and use an authorized maintainer account.
 
 ## CI
 

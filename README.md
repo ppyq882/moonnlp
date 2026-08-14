@@ -124,7 +124,9 @@ The benchmark is a deterministic workload smoke harness. It constructs data and 
 
 ## Mooncakes
 
-Version `0.2.0` of `ppyq882/moonnlp` is published to Mooncakes. The package metadata is declared in `moon.mod`, and the following installation preflight successfully resolved the registry index:
+The module metadata in this repository targets the next release, `0.3.0`. The registry's published `0.2.0` package is historical and predates some APIs now present in this repository, including trainable `HMMModel`, configurable `SummaryOptions`, and `DocumentPipeline`. Do not treat the historical package as a complete copy of this checkout.
+
+Install the latest registry version with:
 
 ```powershell
 moon add ppyq882/moonnlp --dry-run
@@ -136,7 +138,7 @@ Install the published package in another MoonBit module with:
 moon add ppyq882/moonnlp
 ```
 
-The local publish command correctly rejects a duplicate `0.2.0` upload with HTTP 409, which confirms that the version already exists. Future releases must increment the semantic version, update [CHANGELOG.md](CHANGELOG.md), run the full gates, and use an authorized maintainer account.
+The existing `0.2.0` release must not be overwritten. A maintainer should confirm that the registry resolves `0.3.0` or a later version before relying on the APIs described in this README. Future releases must increment the semantic version, update [CHANGELOG.md](CHANGELOG.md), run the full gates, and use an authorized maintainer account.
 
 ## CI
 

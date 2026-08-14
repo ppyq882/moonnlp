@@ -12,7 +12,9 @@ This module's `moon.mod` contains no third-party package dependency declaration,
 
 ## Bundled lexicon provenance limit
 
-Comments in `segment/dict_data.mbt` describe the lexicon as curated from public-domain frequency corpora and CC-CEDICT. This repository currently has no pinned upstream snapshot, provenance manifest, demonstrable copied-data range, or license record for those entries. Therefore this document does not assert a specific upstream URL, license compatibility, public-domain status, or code/data reuse scope. A maintainer must establish that evidence before making stronger distribution or attribution claims.
+`segment/dict_data.mbt` contains a statically bundled lexicon with term-frequency weights and POS tags. This repository does not currently contain a pinned upstream snapshot, provenance manifest, extraction script, demonstrable copied-data range, or license record for those entries.
+
+Accordingly, this release does not claim that the list is public domain, derived from CC-CEDICT, or otherwise cleared for redistribution. Before distributing the lexicon as third-party data, a maintainer must either provide source URLs, versions or snapshots, copied ranges, transformation steps, and compatible license notices, or replace it with data whose provenance is documented. This notice does not grant any additional rights to the bundled list.
 
 ## Acknowledgement
 

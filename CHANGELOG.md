@@ -4,6 +4,13 @@
 
 Future changes will be listed here.
 
+## 0.3.0 - 2026-08-15
+
+- Consolidated the trainable BMES HMM model and neutral default fallback.
+- Added configurable extractive summaries, document analysis, metrics, runnable examples, and a deterministic workload smoke harness.
+- Refreshed acceptance documentation, CI gates, generated interfaces, and conservative third-party provenance notices.
+- Prepared the current repository state as the next Mooncakes release without overwriting historical version `0.2.0`.
+
 ## 0.2.0 - 2026-08-10
 
 - Added a reproducible local MoonBit quality gate and documented its supported toolchain behavior.
